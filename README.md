@@ -85,7 +85,63 @@ After thorough evaluation of various regression models on our dataset, the Gradi
 ## Best Performing Model: Gradient Boosting
 
 - **Gradient Boosting:**
+
   - R2 Score: 0.99
 
 This outstanding performance makes the Gradient Boosting model a compelling choice for predicting and understanding data science compensation trends in our dataset. 
+
+
+
+
+## Building Pipelines Using ZenML
+
+This pipeline leverages [ZenML](https://zenml.io/) to create a streamlined and reproducible workflow for predicting data science salaries. The pipeline consists of several steps, from importing and preprocessing the data to training a machine learning model and evaluating its performance.
+
+### Steps in the Pipeline:
+
+1. **Import and Split Data (`import_and_split`):**
+   - Downloads the dataset from [this URL](https://raw.githubusercontent.com/brempong21/Data-Science-Salaries/main/data_science_salaries.csv).
+   - Encodes categorical variables using LabelEncoder.
+   - Returns a tuple containing the features (`X`) and the target variable (`y`).
+
+2. **Split Data for Training (`split_for_training`):**
+   - Splits the dataset into training and testing sets using `train_test_split`.
+   - Returns four components: training features (`X_train`), testing features (`X_test`), training target (`y_train`), and testing target (`y_test`).
+
+3. **Model Registration (`model_reg`):**
+   - Utilizes [MLflow](https://mlflow.org/) to log metrics and parameters for model tracking.
+   - Trains a Gradient Boosting Regressor on the training data.
+   - Returns the trained model.
+
+4. **Evaluation (`evaluate`):**
+   - Logs the R2 score metric using MLflow.
+   - Computes and logs the test accuracy of the trained model.
+   - Returns the test accuracy.
+
+### Usage:
+
+```python
+from zenml.pipelines import pipeline
+from data_steps.steps import import_and_split, split_for_training, model_reg, evaluate
+
+@pipeline
+def data_science_salaries_pipeline(import_and_split, split_for_training, model_reg, evaluate):
+    X, y = import_and_split()
+    X_train, X_test, y_train, y_test = split_for_training(X, y)
+    model = model_reg(X_train, y_train)
+    evaluate(X_test=X_test, y_test=y_test, model=model)
+```
+
+### Dependencies:
+
+- [ZenML](https://zenml.io/): A framework for ML experiment and pipeline management.
+- [scikit-learn](https://scikit-learn.org/): Machine learning library for data preprocessing, modeling, and evaluation.
+- [MLflow](https://mlflow.org/): An open-source platform for managing the end-to-end machine learning lifecycle.
+
+### Notes:
+
+- **Caching:** Caching is disabled for `model_reg` and `evaluate` steps using the `enable_cache=False` option.
+
+---
+
 
